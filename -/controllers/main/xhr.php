@@ -4,15 +4,21 @@ class Xhr extends \Controller
 {
     public $allow = self::XHR;
 
+    public function reload()
+    {
+        if ($cell = $this->unxpackCell()) {
+            $this->c('~:reload', [], 'cell');
+        }
+    }
+
     public function toggle()
     {
         if ($cell = $this->unxpackCell()) {
             $cell->value(!$cell->value());
 
-            $this->e(underscore_field($cell->model, $cell->field))->trigger([
-                                                                                'model' => $cell->model,
-                                                                                'field' => $cell->field
-                                                                            ]);
+            pusher()->trigger('std/cell/update', [
+                'cell' => $cell->xpack()
+            ]);
         }
     }
 }

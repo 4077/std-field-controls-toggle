@@ -2,16 +2,16 @@
 
 class Main extends \Controller
 {
-    private $model;
-
-    private $field;
+    /**
+     * @var \ewma\Data\Cell
+     */
+    private $cell;
 
     public function __create()
     {
-        $model = $this->model = $this->data['model'];
-        $field = $this->field = $this->data['field'];
+        $this->cell = $this->unpackCell();
 
-        $this->instance_(underscore_cell($model, $field));
+        $this->instance_($this->cell->xpack());
     }
 
     public function reload()
@@ -23,16 +23,13 @@ class Main extends \Controller
     {
         $v = $this->v('|');
 
-        $model = $this->model;
-        $field = $this->field;
-
-        $value = $model->{$field};
+        $value = $this->cell->value();
 
         $v->assign([
                        'CONTENT' => $this->c('\std\ui button:view', [
                            'path'                        => '>xhr:toggle',
                            'data'                        => [
-                               'cell' => xpack_cell($model, $field)
+                               'cell' => $this->cell->xpack()
                            ],
                            'class'                       => 'button ' . ($value ? 'checked' : ''),
                            'eventTriggerClosestSelector' => '.cell',
@@ -43,7 +40,9 @@ class Main extends \Controller
 
         $this->css(':\js\jquery\ui icons');
 
-        $this->e(underscore_field($model, $field))->rebind(':reload');
+        if (!$this->app->html->containerAdded($this->_nodeId())) {
+            $this->app->html->addContainer($this->_nodeId(), $this->c('eventsDispatcher:view'));
+        }
 
         return $v;
     }
